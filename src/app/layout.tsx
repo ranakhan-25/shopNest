@@ -3,7 +3,9 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 
 import Navbar from "@/components/features/Navbar";
-import ThemeProvider  from "@/components/providers/ThemeProvider";
+import ThemeProvider from "@/components/providers/ThemeProvider";
+import ReduxProvider from "@/store/storeProvider";
+import Footer from "@/components/features/Footer";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -16,8 +18,7 @@ export const metadata: Metadata = {
     default: "ShopNest | Modern E-commerce",
     template: "%s | ShopNest",
   },
-  description:
-    "ShopNest is a modern and responsive e-commerce platform.",
+  description: "ShopNest is a modern and responsive e-commerce platform.",
 };
 
 export default function RootLayout({
@@ -26,15 +27,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en"  className="dark" data-theme="dark" suppressHydrationWarning>
+    <html lang="en" className="dark" data-theme="dark" suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={`${poppins.variable} bg-background text-foreground `}
       >
         <ThemeProvider>
-          <Navbar />
+          <ReduxProvider>
+            <Navbar />
 
-          <main>{children}</main>
+            <main>{children}</main>
+
+            <Footer/>
+          </ReduxProvider>
         </ThemeProvider>
       </body>
     </html>

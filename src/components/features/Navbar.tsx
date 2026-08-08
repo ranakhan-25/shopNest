@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import {
-  Menu,
-  Moon,
-  ShoppingCart,
-  Sun,
-  X,
-} from "lucide-react";
+import { Menu, Moon, ShoppingCart, Sun, X } from "lucide-react";
 import { useThemeStore } from "@/store/themeStore";
 
 const navItems = [
@@ -19,14 +13,11 @@ const navItems = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { toggleTheme } = useThemeStore();
-
-
+  const { theme, toggleTheme } = useThemeStore();
 
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
         <Link
           href="/"
           className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
@@ -66,8 +57,7 @@ export default function Navbar() {
             className="rounded-lg p-2 text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             aria-label="Toggle theme"
           >
-            <Sun className="hidden h-5 w-5 dark:block" />
-            <Moon className="h-5 w-5 dark:hidden" />
+            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
 
