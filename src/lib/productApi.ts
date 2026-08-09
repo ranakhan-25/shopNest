@@ -6,7 +6,7 @@ import {
 
 
 
-const API = `${process.env.NEXT_PUBLIC_API_URL}/products`;
+const API = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
 
 // GET ALL
 export const fetchProducts = createAsyncThunk(
@@ -18,7 +18,8 @@ export const fetchProducts = createAsyncThunk(
       throw new Error("Failed to fetch products");
     }
 
-    return (await res.json()) as Product[];
+    const data = await res.json()
+    return data.data as Product[];
   }
 );
 

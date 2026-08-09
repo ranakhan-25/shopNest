@@ -1,13 +1,6 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-}
 
 .hero-track {
   animation: infiniteSlide 24s linear infinite;
