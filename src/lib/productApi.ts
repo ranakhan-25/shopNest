@@ -1,27 +1,40 @@
 import type { Product } from "@/types/productType";
-import {
-  createAsyncThunk,
-} from "@reduxjs/toolkit";
+import { createAsyncThunk } from "@reduxjs/toolkit";
 
+type ProductsResponse = {
+  success: boolean;
+  count: number;
+  data: Product[];
+};
 
-
-
-const API = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
+const API = process.env.NEXT_PUBLIC_API_URL;
 
 // GET ALL
-export const fetchProducts = createAsyncThunk(
-  "products/fetchProducts",
-  async () => {
-    const res = await fetch(API);
+export const fetchProducts = createAsyncThunk<
+  Product[],
+  void,
+  { rejectValue: string }
+>("products/fetchProducts", async (_, { rejectWithValue }) => {
+  try {
+    const res = await fetch(`${API}/api/products`);
 
     if (!res.ok) {
-      throw new Error("Failed to fetch products");
+      return rejectWithValue("Failed to fetch products");
     }
 
-    const data = await res.json()
-    return data.data as Product[];
+    const result: ProductsResponse = await res.json();
+
+    if (!result.success) {
+      return rejectWithValue("Failed to load products");
+    }
+
+    return result.data;
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error ? error.message : "Something went wrong",
+    );
   }
-);
+});
 
 // GET SINGLE
 export const fetchProductById = createAsyncThunk(
@@ -34,14 +47,14 @@ export const fetchProductById = createAsyncThunk(
     }
 
     return (await res.json()) as Product;
-  }
+  },
 );
 
 // CREATE
 export const createProduct = createAsyncThunk(
   "products/createProduct",
   async (product: Omit<Product, "_id">) => {
-    const res = await fetch(API, {
+    const res = await fetch(`${API}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -54,19 +67,13 @@ export const createProduct = createAsyncThunk(
     }
 
     return (await res.json()) as Product;
-  }
+  },
 );
 
 // UPDATE
 export const updateProduct = createAsyncThunk(
   "products/updateProduct",
-  async ({
-    id,
-    data,
-  }: {
-    id: string;
-    data: Partial<Product>;
-  }) => {
+  async ({ id, data }: { id: string; data: Partial<Product> }) => {
     const res = await fetch(`${API}/${id}`, {
       method: "PATCH",
       headers: {
@@ -80,7 +87,7 @@ export const updateProduct = createAsyncThunk(
     }
 
     return (await res.json()) as Product;
-  }
+  },
 );
 
 // DELETE
@@ -96,5 +103,5 @@ export const deleteProduct = createAsyncThunk(
     }
 
     return id;
-  }
+  },
 );

@@ -1,36 +1,65 @@
-
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Eye,
-  PackageOpen,
-  ShoppingCart,
-} from "lucide-react";
-import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { ArrowRight, PackageOpen } from "lucide-react";
 
-import type { RootState } from "@/store/store";
 import ProductCart from "../product/ProductCart";
+import type { Product } from "@/types/productType";
+
+const API = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
+
+type ProductsResponse = {
+  success: boolean;
+  count: number;
+  data: Product[];
+};
 
 export default function Products() {
-  const { products, loading, error } = useSelector(
-    (state: RootState) => state.products
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Latest 6 products
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await fetch(API);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+
+        const result: ProductsResponse = await response.json();
+
+        if (!result.success) {
+          throw new Error("Failed to load products");
+        }
+
+        setProducts(result.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getProducts();
+  }, []);
   const latestProducts = [...products]
     .sort((a, b) => {
       if ("createdAt" in a && "createdAt" in b) {
-        return (
-          new Date(
-            (b as typeof a & { createdAt: string }).createdAt
-          ).getTime() -
-          new Date(
-            (a as typeof a & { createdAt: string }).createdAt
-          ).getTime()
-        );
+        const dateA = new Date(
+          (a as Product & { createdAt: string }).createdAt,
+        ).getTime();
+
+        const dateB = new Date(
+          (b as Product & { createdAt: string }).createdAt,
+        ).getTime();
+
+        return dateB - dateA;
       }
 
       return 0;
@@ -38,10 +67,8 @@ export default function Products() {
     .slice(0, 6);
 
   return (
-    <section className="bg-gray-50 py-16 dark:bg-gray-900 sm:py-20">
+    <section className="py-16 dark:bg-black">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
         <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <span className="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -57,7 +84,7 @@ export default function Products() {
             </p>
           </div>
 
-          {latestProducts.length > 0 && (
+          {!loading && latestProducts.length > 0 && (
             <Link
               href="/products"
               className="group inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
@@ -71,7 +98,6 @@ export default function Products() {
           )}
         </div>
 
-        {/* Loading */}
         {loading && (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -79,29 +105,45 @@ export default function Products() {
                 key={index}
                 className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950"
               >
+                {/* Image Skeleton */}
                 <div className="h-64 animate-pulse bg-gray-200 dark:bg-gray-800" />
 
+                {/* Content Skeleton */}
                 <div className="space-y-3 p-5">
                   <div className="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
-                  <div className="h-6 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
+
+                  <div className="h-6 w-full animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
+
                   <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
-                  <div className="h-10 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
+
+                  <div className="h-7 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
+
+                  <div className="h-10 w-full animate-pulse rounded bg-gray-200 dark:bg-gray-800" />
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {/* Error */}
         {!loading && error && (
           <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center dark:border-red-900 dark:bg-red-950/40">
-            <p className="font-medium text-red-600 dark:text-red-400">
+            <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">
+              Failed to Load Products
+            </h3>
+
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
               {error}
             </p>
+
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-5 rounded-lg bg-red-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              Try Again
+            </button>
           </div>
         )}
 
-        {/* Empty State */}
         {!loading && !error && latestProducts.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center dark:border-gray-700 dark:bg-gray-950">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
@@ -113,8 +155,8 @@ export default function Products() {
             </h3>
 
             <p className="mt-2 max-w-md text-sm text-gray-500 dark:text-gray-400">
-              We don&apos;t have any products available right now.
-              Please check back later.
+              We don&apos;t have any products available right now. Please check
+              back later.
             </p>
 
             <Link
@@ -127,13 +169,28 @@ export default function Products() {
           </div>
         )}
 
-        {/* Products */}
         {!loading && !error && latestProducts.length > 0 && (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {latestProducts.map((product) => (
-              <ProductCart key={product._id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {latestProducts.map((product) => (
+                <ProductCart key={product._id} product={product} />
+              ))}
+            </div>
+
+            {/* View All */}
+            <div className="mt-10 flex justify-center">
+              <Link
+                href="/products"
+                className="group inline-flex items-center gap-2 rounded-lg border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-blue-600 hover:bg-blue-600 hover:text-white dark:border-gray-700 dark:text-gray-300 dark:hover:border-blue-500 dark:hover:bg-blue-600 dark:hover:text-white"
+              >
+                View All Products
+                <ArrowRight
+                  size={17}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </section>
