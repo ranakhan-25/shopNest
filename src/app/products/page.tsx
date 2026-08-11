@@ -1,8 +1,5 @@
 "use client";
-
-import Image from "next/image";
-import Link from "next/link";
-import { Eye, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -18,9 +15,6 @@ import ProductCart from "@/components/product/ProductCart";
 export default function ProductsPage() {
   const dispatch = useDispatch<AppDispatch>();
 
-  // ----------------------------------
-  // Filter Store
-  // ----------------------------------
 
   const {
     search,
@@ -32,33 +26,21 @@ export default function ProductsPage() {
     resetFilters,
   } = useProductFilterStore();
 
-  // ----------------------------------
-  // Pagination
-  // ----------------------------------
 
   const [currentPage, setCurrentPage] = useState(1);
 
   const PRODUCTS_PER_PAGE = 12;
 
-  // ----------------------------------
-  // Redux Products
-  // ----------------------------------
 
   const { products, loading, error } = useSelector(
     (state: RootState) => state.products,
   );
 
-  // ----------------------------------
-  // Fetch Products
-  // ----------------------------------
 
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  // ----------------------------------
-  // Filter + Search + Sort
-  // ----------------------------------
 
   const filteredProducts = [...products]
     .filter((product) => {
@@ -92,9 +74,6 @@ export default function ProductsPage() {
       }
     });
 
-  // ----------------------------------
-  // Pagination Calculation
-  // ----------------------------------
 
   const totalPages = Math.ceil(
     filteredProducts.length / PRODUCTS_PER_PAGE,
@@ -107,9 +86,6 @@ export default function ProductsPage() {
     startIndex + PRODUCTS_PER_PAGE,
   );
 
-  // ----------------------------------
-  // Reset page when filters change
-  // ----------------------------------
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -137,9 +113,6 @@ export default function ProductsPage() {
     <main className="min-h-screen bg-white py-16 dark:bg-gray-950">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-        {/* =====================================
-            Header
-        ====================================== */}
 
         <div className="mb-10 text-center">
           <span className="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
@@ -156,9 +129,6 @@ export default function ProductsPage() {
           </p>
         </div>
 
-        {/* =====================================
-            Search / Filter / Sort
-        ====================================== */}
 
         <SearcFilterAndSort
           search={search}
@@ -171,10 +141,6 @@ export default function ProductsPage() {
           products={products}
           resetFilters={handleResetFilters}
         />
-
-        {/* =====================================
-            Loading
-        ====================================== */}
 
         {loading && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -207,9 +173,6 @@ export default function ProductsPage() {
           </div>
         )}
 
-        {/* =====================================
-            Error
-        ====================================== */}
 
         {!loading && error && (
           <div className="mt-8 rounded-2xl border border-red-200 bg-red-50 p-10 text-center dark:border-red-900 dark:bg-red-950/40">
@@ -230,9 +193,6 @@ export default function ProductsPage() {
           </div>
         )}
 
-        {/* =====================================
-            Empty
-        ====================================== */}
 
         {!loading &&
           !error &&
@@ -262,10 +222,6 @@ export default function ProductsPage() {
             </div>
           )}
 
-        {/* =====================================
-            Products
-        ====================================== */}
-
         {!loading &&
           !error &&
           paginatedProducts.length > 0 && (
@@ -273,10 +229,6 @@ export default function ProductsPage() {
               <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {paginatedProducts.map((product) => <ProductCart key={product._id} product={product} />)}
               </div>
-
-              {/* =====================================
-                  Pagination
-              ====================================== */}
 
               {totalPages > 1 && (
                 <div className="mt-10">

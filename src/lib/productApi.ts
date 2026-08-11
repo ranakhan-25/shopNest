@@ -6,6 +6,11 @@ type ProductsResponse = {
   count: number;
   data: Product[];
 };
+type ProductResponse = {
+  success: boolean;
+  data: Product;
+  message?: string;
+};
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
@@ -37,18 +42,33 @@ export const fetchProducts = createAsyncThunk<
 });
 
 // GET SINGLE
-export const fetchProductById = createAsyncThunk(
-  "products/fetchProductById",
-  async (id: string) => {
-    const res = await fetch(`${API}/${id}`);
+export const fetchProductById = createAsyncThunk<
+  Product,
+  string,
+  { rejectValue: string }
+>("products/fetchProductById", async (id, { rejectWithValue }) => {
+  try {
+    const res = await fetch(`${API}/api/product/${id}`);
 
     if (!res.ok) {
       throw new Error("Failed to fetch product");
     }
 
-    return (await res.json()) as Product;
-  },
-);
+    const result: ProductResponse = await res.json();
+
+    if (!result.success || !result.data) {
+      return rejectWithValue("Product not found");
+    }
+
+    return result.data;
+  } catch (error) {
+    return rejectWithValue(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong",
+    );
+  }
+});
 
 // CREATE
 export const createProduct = createAsyncThunk(
